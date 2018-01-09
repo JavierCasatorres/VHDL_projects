@@ -1,0 +1,12 @@
+#-----------------------------------------------------------
+# Webtalk v2017.4 (64-bit)
+# SW Build 2086221 on Fri Dec 15 20:55:39 MST 2017
+# 
+# Start of session at: Sat Dec 23 19:29:18 2017
+# Process ID: 10992
+# Current directory: F:/ProyectosARTY/iniciacion/iniciacion.sdk/webtalk
+# Command line: wbtcv.exe -mode batch -source sdk_webtalk.tcl
+# Log file: F:/ProyectosARTY/iniciacion/iniciacion.sdk/webtalk/webtalk.log
+# Journal file: F:/ProyectosARTY/iniciacion/iniciacion.sdk/webtalk\webtalk.jou
+#-----------------------------------------------------------
+source sdk_webtalk.tcl
