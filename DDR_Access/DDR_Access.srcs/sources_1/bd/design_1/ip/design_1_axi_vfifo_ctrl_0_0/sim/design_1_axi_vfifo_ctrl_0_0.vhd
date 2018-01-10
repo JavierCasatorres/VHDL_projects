@@ -312,7 +312,7 @@ BEGIN
     GENERIC MAP (
       C_FAMILY => "zynq",
       C_SELECT_XPM => 0,
-      C_DRAM_BASE_ADDR => "80000000",
+      C_DRAM_BASE_ADDR => "00100000",
       C_HAS_AXIS_TUSER => 0,
       C_AXIS_TDATA_WIDTH => 32,
       C_AXIS_TUSER_WIDTH => 1,

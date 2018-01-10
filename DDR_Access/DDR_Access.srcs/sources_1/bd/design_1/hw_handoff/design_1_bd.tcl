@@ -160,6 +160,7 @@ proc create_root_design { parentCell } {
   set FIXED_IO [ create_bd_intf_port -mode Master -vlnv xilinx.com:display_processing_system7:fixedio_rtl:1.0 FIXED_IO ]
 
   # Create ports
+  set sw [ create_bd_port -dir I sw ]
 
   # Create instance: axi_smc, and set properties
   set axi_smc [ create_bd_cell -type ip -vlnv xilinx.com:ip:smartconnect:1.0 axi_smc ]
@@ -170,6 +171,7 @@ proc create_root_design { parentCell } {
   # Create instance: axi_vfifo_ctrl_0, and set properties
   set axi_vfifo_ctrl_0 [ create_bd_cell -type ip -vlnv xilinx.com:ip:axi_vfifo_ctrl:2.0 axi_vfifo_ctrl_0 ]
   set_property -dict [ list \
+   CONFIG.dram_base_addr {00100000} \
    CONFIG.number_of_page_ch0 {4096} \
  ] $axi_vfifo_ctrl_0
 
@@ -267,6 +269,9 @@ proc create_root_design { parentCell } {
    CONFIG.TSTRB_WIDTH {4} \
    CONFIG.Write_Data_Count_Width {15} \
  ] $fifo_generator_1
+
+  # Create instance: lossDetect_0, and set properties
+  set lossDetect_0 [ create_bd_cell -type ip -vlnv xilinx.com:user:lossDetect:1.0 lossDetect_0 ]
 
   # Create instance: processing_system7_0, and set properties
   set processing_system7_0 [ create_bd_cell -type ip -vlnv xilinx.com:ip:processing_system7:5.5 processing_system7_0 ]
@@ -1044,9 +1049,6 @@ proc create_root_design { parentCell } {
   # Create instance: rst_ps7_0_100M, and set properties
   set rst_ps7_0_100M [ create_bd_cell -type ip -vlnv xilinx.com:ip:proc_sys_reset:5.0 rst_ps7_0_100M ]
 
-  # Create instance: xlconstant_0, and set properties
-  set xlconstant_0 [ create_bd_cell -type ip -vlnv xilinx.com:ip:xlconstant:1.1 xlconstant_0 ]
-
   # Create interface connections
   connect_bd_intf_net -intf_net axi_smc_M00_AXI [get_bd_intf_pins axi_smc/M00_AXI] [get_bd_intf_pins processing_system7_0/S_AXI_GP0]
   connect_bd_intf_net -intf_net axi_vfifo_ctrl_0_M_AXI [get_bd_intf_pins axi_smc/S00_AXI] [get_bd_intf_pins axi_vfifo_ctrl_0/M_AXI]
@@ -1058,22 +1060,18 @@ proc create_root_design { parentCell } {
   # Create port connections
   connect_bd_net -net Net [get_bd_pins c_counter_binary_0/CLK] [get_bd_pins clk_wiz_0/clk_out1] [get_bd_pins fifo_generator_0/s_aclk]
   connect_bd_net -net c_counter_binary_0_Q [get_bd_pins c_counter_binary_0/Q] [get_bd_pins fifo_generator_0/s_axis_tdata]
-  connect_bd_net -net processing_system7_0_FCLK_CLK0 [get_bd_pins axi_smc/aclk] [get_bd_pins axi_vfifo_ctrl_0/aclk] [get_bd_pins clk_wiz_0/clk_in1] [get_bd_pins fifo_generator_0/m_aclk] [get_bd_pins fifo_generator_1/s_aclk] [get_bd_pins processing_system7_0/FCLK_CLK0] [get_bd_pins processing_system7_0/M_AXI_GP0_ACLK] [get_bd_pins processing_system7_0/S_AXI_GP0_ACLK] [get_bd_pins rst_ps7_0_100M/slowest_sync_clk]
+  connect_bd_net -net fifo_generator_1_m_axis_tdata [get_bd_pins fifo_generator_1/m_axis_tdata] [get_bd_pins lossDetect_0/dataIN]
+  connect_bd_net -net fifo_generator_1_m_axis_tvalid [get_bd_pins fifo_generator_1/m_axis_tvalid] [get_bd_pins lossDetect_0/enable]
+  connect_bd_net -net processing_system7_0_FCLK_CLK0 [get_bd_pins axi_smc/aclk] [get_bd_pins axi_vfifo_ctrl_0/aclk] [get_bd_pins clk_wiz_0/clk_in1] [get_bd_pins fifo_generator_0/m_aclk] [get_bd_pins fifo_generator_1/s_aclk] [get_bd_pins lossDetect_0/clk] [get_bd_pins processing_system7_0/FCLK_CLK0] [get_bd_pins processing_system7_0/M_AXI_GP0_ACLK] [get_bd_pins processing_system7_0/S_AXI_GP0_ACLK] [get_bd_pins rst_ps7_0_100M/slowest_sync_clk]
   connect_bd_net -net processing_system7_0_FCLK_RESET0_N [get_bd_pins processing_system7_0/FCLK_RESET0_N] [get_bd_pins rst_ps7_0_100M/ext_reset_in]
-  connect_bd_net -net rst_ps7_0_100M_peripheral_aresetn [get_bd_pins axi_smc/aresetn] [get_bd_pins axi_vfifo_ctrl_0/aresetn] [get_bd_pins fifo_generator_0/s_aresetn] [get_bd_pins fifo_generator_1/s_aresetn] [get_bd_pins rst_ps7_0_100M/peripheral_aresetn]
-  connect_bd_net -net xlconstant_0_dout [get_bd_pins fifo_generator_0/s_axis_tvalid] [get_bd_pins fifo_generator_1/m_axis_tready] [get_bd_pins xlconstant_0/dout]
+  connect_bd_net -net rst_ps7_0_100M_peripheral_aresetn [get_bd_pins axi_smc/aresetn] [get_bd_pins axi_vfifo_ctrl_0/aresetn] [get_bd_pins fifo_generator_0/s_aresetn] [get_bd_pins fifo_generator_1/s_aresetn] [get_bd_pins lossDetect_0/reset_n] [get_bd_pins rst_ps7_0_100M/peripheral_aresetn]
+  connect_bd_net -net xlconstant_0_dout [get_bd_ports sw] [get_bd_pins fifo_generator_0/s_axis_tvalid] [get_bd_pins fifo_generator_1/m_axis_tready]
 
   # Create address segments
   create_bd_addr_seg -range 0x20000000 -offset 0x00000000 [get_bd_addr_spaces axi_vfifo_ctrl_0/Data_S2MM] [get_bd_addr_segs processing_system7_0/S_AXI_GP0/GP0_DDR_LOWOCM] SEG_processing_system7_0_GP0_DDR_LOWOCM
-  create_bd_addr_seg -range 0x01000000 -offset 0xFC000000 [get_bd_addr_spaces axi_vfifo_ctrl_0/Data_S2MM] [get_bd_addr_segs processing_system7_0/S_AXI_GP0/GP0_QSPI_LINEAR] SEG_processing_system7_0_GP0_QSPI_LINEAR
-
-  # Exclude Address Segments
   create_bd_addr_seg -range 0x00400000 -offset 0xE0000000 [get_bd_addr_spaces axi_vfifo_ctrl_0/Data_S2MM] [get_bd_addr_segs processing_system7_0/S_AXI_GP0/GP0_IOP] SEG_processing_system7_0_GP0_IOP
-  exclude_bd_addr_seg [get_bd_addr_segs axi_vfifo_ctrl_0/Data_S2MM/SEG_processing_system7_0_GP0_IOP]
-
   create_bd_addr_seg -range 0x40000000 -offset 0x40000000 [get_bd_addr_spaces axi_vfifo_ctrl_0/Data_S2MM] [get_bd_addr_segs processing_system7_0/S_AXI_GP0/GP0_M_AXI_GP0] SEG_processing_system7_0_GP0_M_AXI_GP0
-  exclude_bd_addr_seg [get_bd_addr_segs axi_vfifo_ctrl_0/Data_S2MM/SEG_processing_system7_0_GP0_M_AXI_GP0]
-
+  create_bd_addr_seg -range 0x01000000 -offset 0xFC000000 [get_bd_addr_spaces axi_vfifo_ctrl_0/Data_S2MM] [get_bd_addr_segs processing_system7_0/S_AXI_GP0/GP0_QSPI_LINEAR] SEG_processing_system7_0_GP0_QSPI_LINEAR
 
 
   # Restore current instance

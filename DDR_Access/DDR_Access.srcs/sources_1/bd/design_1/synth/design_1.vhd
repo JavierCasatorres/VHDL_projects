@@ -1,7 +1,7 @@
 --Copyright 1986-2017 Xilinx, Inc. All Rights Reserved.
 ----------------------------------------------------------------------------------
 --Tool Version: Vivado v.2017.4 (win64) Build 2086221 Fri Dec 15 20:55:39 MST 2017
---Date        : Tue Jan  9 22:37:14 2018
+--Date        : Wed Jan 10 23:28:07 2018
 --Host        : JavierPC running 64-bit major release  (build 9200)
 --Command     : generate_target design_1.bd
 --Design      : design_1
@@ -33,7 +33,8 @@ entity design_1 is
     FIXED_IO_mio : inout STD_LOGIC_VECTOR ( 53 downto 0 );
     FIXED_IO_ps_clk : inout STD_LOGIC;
     FIXED_IO_ps_porb : inout STD_LOGIC;
-    FIXED_IO_ps_srstb : inout STD_LOGIC
+    FIXED_IO_ps_srstb : inout STD_LOGIC;
+    sw : in STD_LOGIC
   );
   attribute CORE_GENERATION_INFO : string;
   attribute CORE_GENERATION_INFO of design_1 : entity is "design_1,IP_Integrator,{x_ipVendor=xilinx.com,x_ipLibrary=BlockDiagram,x_ipName=design_1,x_ipVersion=1.00.a,x_ipLanguage=VHDL,numBlks=9,numReposBlks=9,numNonXlnxBlks=0,numHierBlks=0,maxHierDepth=0,numSysgenBlks=0,numHlsBlks=0,numHdlrefBlks=0,numPkgbdBlks=0,bdsource=USER,da_axi4_cnt=1,da_clkrst_cnt=3,da_ps7_cnt=1,synth_mode=OOC_per_IP}";
@@ -355,11 +356,6 @@ architecture STRUCTURE of design_1 is
     Q : out STD_LOGIC_VECTOR ( 31 downto 0 )
   );
   end component design_1_c_counter_binary_0_0;
-  component design_1_xlconstant_0_0 is
-  port (
-    dout : out STD_LOGIC_VECTOR ( 0 to 0 )
-  );
-  end component design_1_xlconstant_0_0;
   component design_1_clk_wiz_0_0 is
   port (
     reset : in STD_LOGIC;
@@ -368,6 +364,15 @@ architecture STRUCTURE of design_1 is
     locked : out STD_LOGIC
   );
   end component design_1_clk_wiz_0_0;
+  component design_1_lossDetect_0_0 is
+  port (
+    dataIN : in STD_LOGIC_VECTOR ( 31 downto 0 );
+    loss : out STD_LOGIC;
+    clk : in STD_LOGIC;
+    enable : in STD_LOGIC;
+    reset_n : in STD_LOGIC
+  );
+  end component design_1_lossDetect_0_0;
   signal Net : STD_LOGIC;
   signal axi_smc_M00_AXI_ARADDR : STD_LOGIC_VECTOR ( 31 downto 0 );
   signal axi_smc_M00_AXI_ARBURST : STD_LOGIC_VECTOR ( 1 downto 0 );
@@ -449,6 +454,8 @@ architecture STRUCTURE of design_1 is
   signal fifo_generator_0_M_AXIS_TDATA : STD_LOGIC_VECTOR ( 31 downto 0 );
   signal fifo_generator_0_M_AXIS_TREADY : STD_LOGIC;
   signal fifo_generator_0_M_AXIS_TVALID : STD_LOGIC;
+  signal fifo_generator_1_m_axis_tdata : STD_LOGIC_VECTOR ( 31 downto 0 );
+  signal fifo_generator_1_m_axis_tvalid : STD_LOGIC;
   signal processing_system7_0_DDR_ADDR : STD_LOGIC_VECTOR ( 14 downto 0 );
   signal processing_system7_0_DDR_BA : STD_LOGIC_VECTOR ( 2 downto 0 );
   signal processing_system7_0_DDR_CAS_N : STD_LOGIC;
@@ -473,7 +480,7 @@ architecture STRUCTURE of design_1 is
   signal processing_system7_0_FIXED_IO_PS_PORB : STD_LOGIC;
   signal processing_system7_0_FIXED_IO_PS_SRSTB : STD_LOGIC;
   signal rst_ps7_0_100M_peripheral_aresetn : STD_LOGIC_VECTOR ( 0 to 0 );
-  signal xlconstant_0_dout : STD_LOGIC_VECTOR ( 0 to 0 );
+  signal xlconstant_0_dout : STD_LOGIC;
   signal NLW_axi_smc_M00_AXI_aruser_UNCONNECTED : STD_LOGIC_VECTOR ( 0 to 0 );
   signal NLW_axi_smc_M00_AXI_awuser_UNCONNECTED : STD_LOGIC_VECTOR ( 0 to 0 );
   signal NLW_axi_vfifo_ctrl_0_m_axis_tlast_UNCONNECTED : STD_LOGIC;
@@ -492,11 +499,10 @@ architecture STRUCTURE of design_1 is
   signal NLW_fifo_generator_0_s_axis_tready_UNCONNECTED : STD_LOGIC;
   signal NLW_fifo_generator_0_wr_rst_busy_UNCONNECTED : STD_LOGIC;
   signal NLW_fifo_generator_0_m_axis_tuser_UNCONNECTED : STD_LOGIC_VECTOR ( 3 downto 0 );
-  signal NLW_fifo_generator_1_m_axis_tvalid_UNCONNECTED : STD_LOGIC;
   signal NLW_fifo_generator_1_rd_rst_busy_UNCONNECTED : STD_LOGIC;
   signal NLW_fifo_generator_1_wr_rst_busy_UNCONNECTED : STD_LOGIC;
-  signal NLW_fifo_generator_1_m_axis_tdata_UNCONNECTED : STD_LOGIC_VECTOR ( 31 downto 0 );
   signal NLW_fifo_generator_1_m_axis_tuser_UNCONNECTED : STD_LOGIC_VECTOR ( 3 downto 0 );
+  signal NLW_lossDetect_0_loss_UNCONNECTED : STD_LOGIC;
   signal NLW_processing_system7_0_M_AXI_GP0_ARVALID_UNCONNECTED : STD_LOGIC;
   signal NLW_processing_system7_0_M_AXI_GP0_AWVALID_UNCONNECTED : STD_LOGIC;
   signal NLW_processing_system7_0_M_AXI_GP0_BREADY_UNCONNECTED : STD_LOGIC;
@@ -558,6 +564,7 @@ architecture STRUCTURE of design_1 is
   attribute X_INTERFACE_INFO of DDR_dqs_p : signal is "xilinx.com:interface:ddrx:1.0 DDR DQS_P";
   attribute X_INTERFACE_INFO of FIXED_IO_mio : signal is "xilinx.com:display_processing_system7:fixedio:1.0 FIXED_IO MIO";
 begin
+  xlconstant_0_dout <= sw;
 axi_smc: component design_1_axi_smc_0
      port map (
       M00_AXI_araddr(31 downto 0) => axi_smc_M00_AXI_ARADDR(31 downto 0),
@@ -733,15 +740,15 @@ fifo_generator_0: component design_1_fifo_generator_0_0
       s_axis_tdata(31 downto 0) => c_counter_binary_0_Q(31 downto 0),
       s_axis_tready => NLW_fifo_generator_0_s_axis_tready_UNCONNECTED,
       s_axis_tuser(3 downto 0) => B"0000",
-      s_axis_tvalid => xlconstant_0_dout(0),
+      s_axis_tvalid => xlconstant_0_dout,
       wr_rst_busy => NLW_fifo_generator_0_wr_rst_busy_UNCONNECTED
     );
 fifo_generator_1: component design_1_fifo_generator_0_1
      port map (
-      m_axis_tdata(31 downto 0) => NLW_fifo_generator_1_m_axis_tdata_UNCONNECTED(31 downto 0),
-      m_axis_tready => xlconstant_0_dout(0),
+      m_axis_tdata(31 downto 0) => fifo_generator_1_m_axis_tdata(31 downto 0),
+      m_axis_tready => xlconstant_0_dout,
       m_axis_tuser(3 downto 0) => NLW_fifo_generator_1_m_axis_tuser_UNCONNECTED(3 downto 0),
-      m_axis_tvalid => NLW_fifo_generator_1_m_axis_tvalid_UNCONNECTED,
+      m_axis_tvalid => fifo_generator_1_m_axis_tvalid,
       rd_rst_busy => NLW_fifo_generator_1_rd_rst_busy_UNCONNECTED,
       s_aclk => processing_system7_0_FCLK_CLK0,
       s_aresetn => rst_ps7_0_100M_peripheral_aresetn(0),
@@ -750,6 +757,14 @@ fifo_generator_1: component design_1_fifo_generator_0_1
       s_axis_tuser(3 downto 0) => B"0000",
       s_axis_tvalid => axi_vfifo_ctrl_0_M_AXIS_TVALID,
       wr_rst_busy => NLW_fifo_generator_1_wr_rst_busy_UNCONNECTED
+    );
+lossDetect_0: component design_1_lossDetect_0_0
+     port map (
+      clk => processing_system7_0_FCLK_CLK0,
+      dataIN(31 downto 0) => fifo_generator_1_m_axis_tdata(31 downto 0),
+      enable => fifo_generator_1_m_axis_tvalid,
+      loss => NLW_lossDetect_0_loss_UNCONNECTED,
+      reset_n => rst_ps7_0_100M_peripheral_aresetn(0)
     );
 processing_system7_0: component design_1_processing_system7_0_0
      port map (
@@ -870,9 +885,5 @@ rst_ps7_0_100M: component design_1_rst_ps7_0_100M_0
       peripheral_aresetn(0) => rst_ps7_0_100M_peripheral_aresetn(0),
       peripheral_reset(0) => NLW_rst_ps7_0_100M_peripheral_reset_UNCONNECTED(0),
       slowest_sync_clk => processing_system7_0_FCLK_CLK0
-    );
-xlconstant_0: component design_1_xlconstant_0_0
-     port map (
-      dout(0) => xlconstant_0_dout(0)
     );
 end STRUCTURE;
